@@ -1,25 +1,79 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import { auth } from './firebase';
+import { Mobile, Pc } from './Media';
+import { Routes, Route } from "react-router-dom";
+
+
+import Main from "./page/Main";
+import Login from "./page/Login";
+import Signup from "./page/Signup";
+import Post from "./page/Post";
+import { onAuthStateChanged } from 'firebase/auth';
+import Header from './components/Header';
+import styled from 'styled-components';
+import PostList from './page/PostList';
 
 function App() {
+
+  const [is_login, setIsLogin] = React.useState(false);
+
+  console.log(auth.currentUser); 
+
+  const loginChek = async(user) => {
+    if (user) {
+      setIsLogin(true);
+    } else {
+      setIsLogin(false)
+    }
+  }
+  React.useEffect(() => {
+    onAuthStateChanged(auth,loginChek);
+  }, []);
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Wrap>
+      <Mobile />
+      <Pc />
+      <Header />
+      
+
+      {/* <Routes>
+        {is_login ? (
+          <Route path="/*" exact element={<Main />} />
+        ) : (
+          <Route path="/login" element={<Login />} />
+        )}
+
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/post" element={<Post />} />
+      </Routes> */}
+      <Routes>
+        {is_login ? (
+          <Route path="/*"  element={<Main />} />
+        ) : (
+          <Route path="/login" element={<Login />} />
+        )}
+        {/* <Route path="/*" element={<Main />} /> */}
+        <Route path="/signup" element={<Signup />} />
+        {/* <Route path="/login" element={<Login />} /> */}
+        <Route path="/post" element={<Post />} />
+        <Route path="/postlist" element={<PostList />} />
+      
+      
+      </Routes>
+    </Wrap>
   );
 }
 
+
+const Wrap = styled.div`
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+
+
+`;
 export default App;

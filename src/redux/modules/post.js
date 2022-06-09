@@ -1,27 +1,21 @@
-// word.js
-import { db } from "../../firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore"; // crud 할때 쓰는 애들
+import { createAction, handleActions } from "redux-actions";
 
-// Actions
-const LOAD = "word/LOAD";
+import { produce } from "immer";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "../../firebase";
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
+import moment from "moment";
+
+//action
+
+const LOAD = "post/LOAD";
 const CREATE = "post/CREATE";
-// const CHECK = "word/CHECK";
+const UPDATE = "post/UPDATE";
+const DELETE = "post/DELETE";
 
-// const DELETE = "word/DELETE";
+const PREVIEW = "post/PREVIEW";
 
-const initialState = {
-  list: ["test"],
-};
-
-// Action Creators
+//action creator
 export function loadPost(post_list) {
   return { type: LOAD, post_list };
 }
@@ -30,49 +24,112 @@ export function createPost(post) {
   return { type: CREATE, post };
 }
 
-// export function checkWord(word_index) {
-//   return { type: CHECK, word_index };
-// }
+export function updatePost(post,post_id) {
+  return { type  : UPDATE , post,post_id}
+}
 
-// export function deleteWord(word_index) {
-//   return { type: DELETE, word_index };
-// }
+export function deletePost(post_index) {
+  return { type: DELETE, post_index };
+}
 
-// firebase랑 통신하는 함수 // 미들웨어 !!!!
+export function previewPost(preview) {
+  return { type: PREVIEW ,preview};
+}
 
-// dispatch를 인자로 받아오는 이유는 dispatch() 처럼 어떤 액션을 줘야 하니까 !
-// export const loadWordFB = () => {
-//   return async function (dispatch) {
-//     const word_data = await getDocs(collection(db, "word"));
-//     //console.log(word_data)
+const initialState = {
+  list: [],
+};
 
-//     let word_list = [];
+const initialPost = {
+  // user_info: {
+  //   id: 0,
+  //   user_name: 'fall',
+  //   user_profile: '../../img/IMG_2246 2.jpg'
+  // },
+  image_url: "../../img/IMG_2246 2.jpg",
+  text: "야호",
+  // like_cnt: 0,
+  // is_like: false,
+  // contents: "가을",
+  // comment_cnt: 0,
+  // insert_dt: moment().format("YYYY-MM-DD hh:mm:ss a"),
+};
 
-//     //리덕스에 넣어주기
-//     word_data.forEach((doc) => {
-//       //console.log(doc.data())
-//       word_list.push({ id: doc.id, ...doc.data() });
-//     });
-//     //console.log(word_list);
+//미들웨어
+export const loadPostFB = () => {
+  return async function (dispatch, getState) {
+    const post_data = await getDocs(collection(db, "post"));
 
-//     dispatch(loadPost(word_list));
-//   };
-// };
 
-export const createPostFB = (post) => {
-  return async function (dispatch) {
-    const docRef = await addDoc(collection(db, "post"), post);
-    // console.log((await getDoc(docRef)).data());
-    // const _word = await getDoc(docRef);
-    const word_data = { id: docRef.id, ...post };
+    //console.log(word_data)
 
-    // console.log(word_data);
+    let post_list = [];
 
-    //액션을 일으며! 나 바꿔줘!
-    dispatch(createPost(word_data));
+    // //리덕스에 넣어주기
+    post_data.forEach((doc) => {
+      //console.log(doc.data())
+      post_list.push({ id: doc.id, ...doc.data() });
+    });
+
+
+    dispatch(loadPost(post_list));
   };
 };
 
+export const addPostFB = (post) => {
+  return async function (dispatch,getState) {
+
+
+    const docRef = await addDoc(collection(db, "post"), post);
+  
+    console.log(docRef);
+
+    const post_data = { id: docRef.id, ...post };
+
+ 
+
+    //액션을 일으며! 나 바꿔줘!
+    dispatch(createPost(post_data));
+  };
+};
+
+
+export const updatePostFB = (post,post_id) => {
+  return async function (dispatch) {
+  
+
+    const docRef = doc(db, "post", post_id);
+    
+    
+    await updateDoc(docRef, post)
+    // 도큐먼트 정보, 어떻게 수정할건지
+    
+    dispatch(updatePost(post, post_id))
+
+  };
+}
+
+
+export const deletepostFB = (post_id) => {
+  return async function (dispatch, getState) {
+    if (!post_id) {
+    
+      window.alert("아이디가 없어요");
+      return;
+    } 
+    const docRef = doc(db, "post", post_id);
+    console.log(post_id)
+    await deleteDoc(docRef);
+
+    const _post_list = getState().post.list;
+   
+    const post_index = _post_list.findIndex((w) => {
+      console.log(w.id,post_id)
+      return w.id === post_id;
+    });
+    dispatch(deletePost(post_index));
+  };
+};
 
 // Reducer
 export default function reducer(state = initialState, action = {}) {
@@ -86,9 +143,39 @@ export default function reducer(state = initialState, action = {}) {
       return { list: new_post_list };
     }
 
+    // case "post/UPDATE": {
+    //   const newState = [...state.list, ...action.post];
+    //   // state.list배열에 수정된 값 배열을 바꿔줍니다.
+    //   return { list: newState }; // 뉴스테이트를 list로 바꿔줍니다/
+      
+    // }
+
+    case "post/UPDATE": {
+      
+      const new_post_list = state.list.map((e, idx) => {
+     console.log( e)
+        if (action.post.id === e.id) {
+          return {
+            ...e,
+            contents: action.post.contents,
+            img_url: action.post.img_url,
+          }
+        } else { return e; }
+      }); return { list: new_post_list };
+  
+    }
+      
+
+    case "post/DELETE": {
+      const new_post_list = state.list.filter((l, idx) => {
+        return parseInt(action.post_index) !== idx;
+      });
+      return { list: new_post_list };
+    }
 
     // do reducer stuff
     default:
       return state;
   }
 }
+

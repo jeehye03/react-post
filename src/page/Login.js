@@ -3,27 +3,39 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import React from "react";
 import { auth, db } from "../firebase";
 import styled from "styled-components";
+import { useDispatch } from "react-redux";
+import { logInFB } from "../redux/modules/user";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+
   const id_ref = React.useRef();
   const pw_ref = React.useRef();
+  const dispatch = useDispatch();
+  const navegate = useNavigate();
 
-  const loginFB = async () => {
-      const user = await signInWithEmailAndPassword(auth,
-          id_ref.current.value,
-          pw_ref.current.value
-      );
-      console.log(user);
+  const loginBtn =  () => {
+      // const user = await signInWithEmailAndPassword(auth,
+      //     id_ref.current.value,
+      //     pw_ref.current.value
+      // );
+      // console.log(user);
 
-      const user_docs = await getDocs(
-        query(
-          collection(db, "users"),
-          where("user_id", "==", user.user.email)
-        )
-      );
-      user_docs.forEach((u) => {
-        console.log(u.data());
-      }); // 데이터 담아줘야해
+      // const user_docs = await getDocs(
+      //   query(
+      //     collection(db, "users"),
+      //     where("user_id", "==", user.user.email)
+      //   )
+      // );
+      // user_docs.forEach((u) => {
+      //   console.log(u.data());
+      // }); // 데이터 담아줘야해
+    
+    const id = id_ref.current.value;
+     const pw = pw_ref.current.value;
+    dispatch(logInFB(id, pw));
+    navegate("/")
+    
   };
 
   return (
@@ -36,9 +48,9 @@ const Login = () => {
           <input ref={id_ref} placeholder="이메일을 입력해 주세요" />
 
           <p>비밀번호</p>
-          <input ref={pw_ref} placeholder="비밀번호를 입력해 주세요" />
+          <input type="password" ref={pw_ref} placeholder="비밀번호를 입력해 주세요" />
 
-          <button onClick={loginFB}>로그인하기</button>
+          <button onClick={loginBtn}>로그인하기</button>
         </Container>
       </Wrap>
     </div>
@@ -51,6 +63,7 @@ const Wrap = styled.div`
   align-items: center;
   width: 1000px;
   height: 100%;
+  font-family: "Cafe24Ohsquareair";
 `;
 
 const Container = styled.div`

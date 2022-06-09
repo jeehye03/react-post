@@ -44,12 +44,12 @@ const Detail = () => {
   //console.log(detail)
   
   // 로그인한 유저 이름
-  const is_me = user_id[0].name;
+  const is_me = user_id[0]?.name;
 
   //console.log(is_me);
 
   // 포스팅한 유저 이름
-  const post_nm = detail[0].user_nm
+  const post_nm = detail[0]?.user_nm
   //console.log(post_nm)
 
 

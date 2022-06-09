@@ -125,8 +125,8 @@ const Icon = styled.div`
 `;
 
 const Img = styled.img`
-  width: 300px;
-  height: 250px;
+  width: 350px;
+  height: 300px;
   padding: 16px 0;
 `;
 

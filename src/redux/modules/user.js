@@ -26,6 +26,7 @@ const initialState = {
   list:[]
 };
 
+
 // Action Creators
 const setUser = createAction(SET_USER, (user) => ({ user }));
 

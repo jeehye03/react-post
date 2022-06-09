@@ -12,7 +12,6 @@ const LOAD = "post/LOAD";
 const CREATE = "post/CREATE";
 const UPDATE = "post/UPDATE";
 const DELETE = "post/DELETE";
-
 const PREVIEW = "post/PREVIEW";
 
 //action creator
@@ -86,8 +85,6 @@ export const addPostFB = (post) => {
 
     const post_data = { id: docRef.id, ...post };
 
- 
-
     //액션을 일으며! 나 바꿔줘!
     dispatch(createPost(post_data));
   };
@@ -99,7 +96,6 @@ export const updatePostFB = (post,post_id) => {
   
 
     const docRef = doc(db, "post", post_id);
-    
     
     await updateDoc(docRef, post)
     // 도큐먼트 정보, 어떻게 수정할건지
@@ -117,6 +113,7 @@ export const deletepostFB = (post_id) => {
       window.alert("아이디가 없어요");
       return;
     } 
+
     const docRef = doc(db, "post", post_id);
     console.log(post_id)
     await deleteDoc(docRef);
@@ -124,12 +121,15 @@ export const deletepostFB = (post_id) => {
     const _post_list = getState().post.list;
    
     const post_index = _post_list.findIndex((w) => {
-      console.log(w.id,post_id)
+      console.log(w.id, post_id)
+      
       return w.id === post_id;
     });
+
     dispatch(deletePost(post_index));
   };
 };
+
 
 // Reducer
 export default function reducer(state = initialState, action = {}) {
@@ -143,6 +143,7 @@ export default function reducer(state = initialState, action = {}) {
       return { list: new_post_list };
     }
 
+      
     // case "post/UPDATE": {
     //   const newState = [...state.list, ...action.post];
     //   // state.list배열에 수정된 값 배열을 바꿔줍니다.
@@ -162,7 +163,6 @@ export default function reducer(state = initialState, action = {}) {
           }
         } else { return e; }
       }); return { list: new_post_list };
-  
     }
       
 
@@ -173,6 +173,7 @@ export default function reducer(state = initialState, action = {}) {
       return { list: new_post_list };
     }
 
+      
     // do reducer stuff
     default:
       return state;
